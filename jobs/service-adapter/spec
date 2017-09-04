@@ -3,6 +3,7 @@ name: service-adapter
 
 templates: {}
 
-packages: []
+packages:
+- service-adapter
 
 properties: {}

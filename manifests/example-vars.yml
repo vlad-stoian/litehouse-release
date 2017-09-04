@@ -1,0 +1,14 @@
+
+service-broker-username: admin
+service-broker-password: admin
+
+cf-api-url: api.cf.com
+cf-uaa-url: uaa.cf.com
+cf-uaa-client-id:
+cf-uaa-client-secret:
+
+bosh-url: bosh.com
+bosh-root-ca-cert:
+bosh-uaa-url:
+bosh-uaa-client-id:
+bosh-uaa-client-secret:

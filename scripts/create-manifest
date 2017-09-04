@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+set -e # bail out early if any command fails
+set -u # fail if we hit unset variables
+set -o pipefail # fail if any component of any pipe fails
+
+[[ -z "${DEBUG:-""}" ]] || set -x
+
+: "${WORKSPACE:="$HOME/workspace"}"
+: "${MANIFESTS:="$WORKSPACE/litehouse-release/manifests"}"
+
+main() {
+  bosh interpolate \
+    --vars-file "$MANIFESTS/chaplin-vars.yml" \
+    "$MANIFESTS/litehouse-template.yml" #\
+    # > "$WORKSPACE/litehouse-release/manifest/litehouse-manifest.yml"
+}
+
+main

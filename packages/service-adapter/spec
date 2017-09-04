@@ -1,6 +1,8 @@
 ---
 name: service-adapter
 
-dependencies: []
+dependencies:
+- go-1.9
 
-files: []
+files:
+- github.com/vlad-stoian/litehouse/**/*.go

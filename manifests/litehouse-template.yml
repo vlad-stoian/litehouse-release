@@ -1,0 +1,99 @@
+name: litehouse
+
+releases:
+- name: on-demand-service-broker
+  version: 0.17.0
+  url: https://s3.amazonaws.com/cf-services-internal-builds/on-demand-service-broker/on-demand-service-broker-0.17.0.tgz
+  sha1: 1e3de7914671d4690a6d93d02554975d197c9ad2
+- name: litehouse
+  version: latest
+
+stemcells:
+- alias: trusty
+  os: ubuntu-trusty
+  version: 3445.2
+
+instance_groups:
+  - name: broker
+    instances: 1
+    jobs:
+      - name: broker
+        release: on-demand-service-broker
+        properties:
+          port: 8080
+          username: ((service-broker-username))
+          password: ((service-broker-password))
+          cf:
+            url: ((cf-api-url))
+            root_ca_cert:
+            authentication:
+              url: ((cf-uaa-url))
+              user_credentials: # should create a uaa client (client_credentials)
+                username: ((cf-admin-username))
+                password: ((cf-admin-password))
+          bosh:
+            url: ((bosh-url))
+            root_ca_cert: ((bosh-root-ca-cert))
+            disable_ssl_cert_verification: true
+            authentication: # can also use basic auth. See ODB docs
+              basic:
+                username: ((bosh-basic-username))
+                password: ((bosh-basic-password))
+          service_adapter:
+            path: /var/vcap/packages/service-adapter/bin/litehouse
+          service_deployment:
+            releases:
+              - name: bosh
+                version: 257.1
+                jobs: [nats, blobstore, postgres, director, health_monitor]
+              - name: bosh-warden-cpi
+                version: 29
+                jobs: [warden_cpi]
+              - name: garden-linux
+                version: 0.337.0
+                jobs: [garden]
+              - name: port-forwarding
+                version: 1
+                jobs: [port_forwarding]
+            stemcell:
+              os: ubuntu-trusty
+              version: 3445.2
+          service_catalog:
+            id: bosh
+            service_name: bosh
+            service_description: Creates a bosh lite just for you
+            bindable: false
+            plan_updatable: false
+            metadata: {}
+            tags: []
+            plans:
+              - name: lite
+                plan_id: lite
+                description: Bosh lite
+                metadata: {}
+                quotas:
+                  service_instance_limit: 10
+                properties:
+                  virtual_network: #something
+                instance_groups:
+                  - name: bosh-lite
+                    vm_type: m3.medium
+                    persistent_disk: 10GB
+                    instances: 1
+                    networks: [private]
+                    azs: [z1]
+
+      - name: service-adapter
+        release: litehouse
+
+    vm_type: m3.medium
+    stemcell: trusty
+    networks:
+    - name: private
+    azs: [z1]
+
+update:
+  canaries: 1
+  canary_watch_time: 3000-180000
+  update_watch_time: 3000-180000
+  max_in_flight: 4
