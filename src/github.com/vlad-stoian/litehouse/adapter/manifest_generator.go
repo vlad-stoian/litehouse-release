@@ -15,5 +15,13 @@ func (mg ManifestGenerator) GenerateManifest(
 	previousPlan *serviceadapter.Plan,
 ) (bosh.BoshManifest, error) {
 
-	return nil, nil
+	return bosh.BoshManifest{
+		Name:     "litehouse",
+		Releases: []bosh.Release{},
+		Stemcells: []bosh.Stemcell{{
+			Alias:   "stemcell-alias",
+			OS:      "stemcell-os",
+			Version: "stemcell-version",
+		}},
+	}, nil
 }
