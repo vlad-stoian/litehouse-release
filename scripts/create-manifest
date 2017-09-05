@@ -8,11 +8,31 @@ set -o pipefail # fail if any component of any pipe fails
 
 : "${WORKSPACE:="$HOME/workspace"}"
 : "${MANIFESTS:="$WORKSPACE/litehouse-release/manifests"}"
+: "${BBL_DIRECTOR:="$WORKSPACE/deployments-london/bosh-bbl-director-chaplin"}"
+
+
 
 main() {
+  local director_address
+  director_address="$(bbl --state-dir "$BBL_DIRECTOR" director-address)"
+  director_username="$(bbl --state-dir "$BBL_DIRECTOR" director-username)"
+  director_password="$(bbl --state-dir "$BBL_DIRECTOR" director-password)"
+  director_ca_cert="$(bbl --state-dir "$BBL_DIRECTOR" director-ca-cert)"
+
+  cf_admin_password=$(bosh interpolate --path=/cf_admin_password "$BBL_DIRECTOR"/chaplin.cf-rabbitmq.gcp.london.cf-app.com-vars.yml)
+
   bosh interpolate \
-    --vars-file "$MANIFESTS/chaplin-vars.yml" \
-    "$MANIFESTS/litehouse-template.yml" #\
+    "$MANIFESTS/litehouse-template.yml" \
+    --vars-store "$MANIFESTS/litehouse-vars-store.yml" \
+    --var cf-api-url=https://api.chaplin.cf-rabbitmq.gcp.london.cf-app.com \
+    --var cf-uaa-url=https://uaa.chaplin.cf-rabbitmq.gcp.london.cf-app.com \
+    --var cf-admin-username=admin \
+    --var cf-admin-password="$cf_admin_password" \
+    --var bosh-url="$director_address" \
+    --var bosh-root-ca-cert="$director_ca_cert" \
+    --var bosh-basic-username="$director_username" \
+    --var bosh-basic-password="$director_password"
+
     # > "$WORKSPACE/litehouse-release/manifest/litehouse-manifest.yml"
 }
 

@@ -97,3 +97,9 @@ update:
   canary_watch_time: 3000-180000
   update_watch_time: 3000-180000
   max_in_flight: 4
+
+variables:
+- name: service-broker-username
+  type: password
+- name: service-broker-password
+  type: password
