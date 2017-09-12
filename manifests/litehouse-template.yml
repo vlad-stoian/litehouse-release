@@ -11,7 +11,7 @@ releases:
 stemcells:
 - alias: trusty
   os: ubuntu-trusty
-  version: 3445.2
+  version: 3445.7
 
 instance_groups:
   - name: broker
@@ -20,12 +20,12 @@ instance_groups:
       - name: broker
         release: on-demand-service-broker
         properties:
+          disable_ssl_cert_verification: true
           port: 8080
           username: ((service-broker-username))
           password: ((service-broker-password))
           cf:
             url: ((cf-api-url))
-            root_ca_cert:
             authentication:
               url: ((cf-uaa-url))
               user_credentials: # should create a uaa client (client_credentials)
@@ -40,7 +40,7 @@ instance_groups:
                 username: ((bosh-basic-username))
                 password: ((bosh-basic-password))
           service_adapter:
-            path: /var/vcap/packages/service-adapter/bin/litehouse
+            path: /var/vcap/packages/service-adapter/bin/service-adapter
           service_deployment:
             releases:
               - name: bosh
@@ -57,7 +57,7 @@ instance_groups:
                 jobs: [port_forwarding]
             stemcell:
               os: ubuntu-trusty
-              version: 3445.2
+              version: 3445.7
           service_catalog:
             id: bosh
             service_name: bosh
@@ -77,19 +77,19 @@ instance_groups:
                   virtual_network: #something
                 instance_groups:
                   - name: bosh-lite
-                    vm_type: m3.medium
+                    vm_type: small-highmem
                     persistent_disk: 10GB
                     instances: 1
-                    networks: [private]
+                    networks: [default]
                     azs: [z1]
 
       - name: service-adapter
         release: litehouse
 
-    vm_type: m3.medium
+    vm_type: small-highmem
     stemcell: trusty
     networks:
-    - name: private
+    - name: default
     azs: [z1]
 
 update:
