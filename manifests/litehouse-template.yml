@@ -92,6 +92,43 @@ instance_groups:
     - name: default
     azs: [z1]
 
+  - name: register-broker
+    lifecycle: errand
+    instances: 1
+    jobs:
+      - name: register-broker
+        release: on-demand-service-broker
+        properties:
+          enable_service_access: true
+          disable_ssl_cert_verification: true
+          broker_name: litehouse
+          cf:
+            api_url: ((cf-api-url))
+            admin_username: ((cf-admin-username))
+            admin_password: ((cf-admin-password))
+    vm_type: small
+    stemcell: trusty
+    networks: [{name: default}]
+    azs: [z1]
+
+  - name: deregister-broker
+    lifecycle: errand
+    instances: 1
+    jobs:
+      - name: deregister-broker
+        release: on-demand-service-broker
+        properties:
+          disable_ssl_cert_verification: true
+          broker_name: litehouse
+          cf:
+            api_url: ((cf-api-url))
+            admin_username: ((cf-admin-username))
+            admin_password: ((cf-admin-password))
+    vm_type: small
+    stemcell: trusty
+    networks: [{name: default}]
+    azs: [z1]
+
 update:
   canaries: 1
   canary_watch_time: 3000-180000
