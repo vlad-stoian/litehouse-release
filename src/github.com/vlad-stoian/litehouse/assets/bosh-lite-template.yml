@@ -1,0 +1,195 @@
+instance_groups:
+- azs:
+  - z1
+  instances: 1
+  jobs:
+  - name: nats
+    release: bosh
+  - name: postgres-9.4
+    release: bosh
+  - name: blobstore
+    release: bosh
+  - name: director
+    release: bosh
+  - name: health_monitor
+    release: bosh
+  - name: warden_cpi
+    release: bosh-warden-cpi
+  - name: garden
+    release: garden-linux
+  - name: user_add
+    properties:
+      users:
+      - name: jumpbox
+        public_key: ((jumpbox_ssh.public_key))
+    release: os-conf
+  name: bosh
+  networks:
+  - default:
+    - dns
+    - gateway
+    name: default
+  - name: public
+    static_ips:
+    - ((external_ip))
+  persistent_disk_type: 100GB
+  properties:
+    agent:
+      mbus: nats://nats:((nats_password))@((internal_ip)):4222
+    blobstore:
+      address: ((internal_ip))
+      agent:
+        password: ((blobstore_agent_password))
+        user: agent
+      director:
+        password: ((blobstore_director_password))
+        user: director
+      port: 25250
+      provider: dav
+    compiled_package_cache:
+      options:
+        blobstore_path: /var/vcap/store/tmp/compiled_package_cache
+      provider: local
+    director:
+      address: 127.0.0.1
+      cpi_job: warden_cpi
+      db:
+        adapter: postgres
+        database: bosh
+        host: 127.0.0.1
+        listen_address: 127.0.0.1
+        password: ((postgres_password))
+        user: postgres
+      default_ssh_options:
+        gateway_host: ((external_ip))
+        gateway_user: jumpbox
+      enable_dedicated_status_worker: true
+      enable_nats_delivered_templates: true
+      enable_post_deploy: true
+      events:
+        record_events: true
+      flush_arp: true
+      generate_vm_passwords: true
+      ignore_missing_gateway: true
+      name: ((director_name))
+      ssl:
+        cert: ((director_ssl.certificate))
+        key: ((director_ssl.private_key))
+      user_management:
+        local:
+          users:
+          - name: admin
+            password: ((admin_password))
+          - name: hm
+            password: ((hm_password))
+        provider: local
+      workers: 4
+    garden:
+      allow_host_access: true
+      debug_listen_address: 127.0.0.1:17013
+      default_container_grace_time: 0
+      destroy_containers_on_start: true
+      disk_quota_enabled: false
+      graph_cleanup_threshold_in_mb: 0
+      listen_address: 127.0.0.1:7777
+      listen_network: tcp
+    hm:
+      director_account:
+        ca_cert: ((director_ssl.ca))
+        password: ((hm_password))
+        user: hm
+      resurrector_enabled: true
+    nats:
+      address: 127.0.0.1
+      password: ((nats_password))
+      user: nats
+    ntp:
+    - time1.google.com
+    - time2.google.com
+    - time3.google.com
+    - time4.google.com
+    postgres:
+      adapter: postgres
+      database: bosh
+      host: 127.0.0.1
+      listen_address: 127.0.0.1
+      password: ((postgres_password))
+      user: postgres
+    warden_cpi:
+      agent:
+        blobstore:
+          options:
+            endpoint: http://10.254.50.4:25250
+            password: ((blobstore_agent_password))
+            user: agent
+          provider: dav
+        mbus: nats://nats:((nats_password))@10.254.50.4:4222
+      host_ip: 10.254.50.4
+      warden:
+        connect_address: 127.0.0.1:7777
+        connect_network: tcp
+  stemcell: default
+  vm_type: default
+name: bosh
+releases:
+- name: bosh
+  sha1: 07c07d8520b3508fbc25c4a747c9c038a4b8b672
+  url: https://s3.amazonaws.com/bosh-compiled-release-tarballs/bosh-262.2-ubuntu-trusty-3421.9-20170628-223206-395348439-20170628223211.tgz?versionId=LSWubg7BOnAZxXFDaCHEpIXWcxyqkb1o
+  version: "262.2"
+- name: bosh-warden-cpi
+  sha1: 4bb373ba2331cc5b17fb6fb41921e308caab9222
+  url: https://s3.amazonaws.com/bosh-compiled-release-tarballs/bosh-warden-cpi-34-ubuntu-trusty-3421.9-20170621-054713-292897174-20170621054718.tgz?versionId=nPiYCAltzyFMN8eghQf6.YbkBYQBw9MR
+  version: "34"
+- name: garden-linux
+  sha1: 80155df38a2adaeaa31a3b3bf92a78f77d0bba7e
+  url: https://s3.amazonaws.com/bosh-compiled-release-tarballs/garden-linux-0.342.0-ubuntu-trusty-3421.9-20170621-054813-977181521-20170621054819.tgz?versionId=7dtppaaQl0QT56J098jUL4cHCO.kUWfD
+  version: 0.342.0
+- name: os-conf
+  sha1: 651f10a765a2900a7f69ea07705f3367bd8041eb
+  url: https://bosh.io/d/github.com/cloudfoundry/os-conf-release?v=11
+  version: 11
+stemcells:
+- alias: default
+  os: ubuntu-trusty
+  version: "3421.3"
+update:
+  canaries: 0
+  canary_watch_time: 30000-180000
+  max_in_flight: 1
+  update_watch_time: 30000-180000
+variables:
+- name: admin_password
+  type: password
+- name: blobstore_director_password
+  type: password
+- name: blobstore_agent_password
+  type: password
+- name: hm_password
+  type: password
+- name: nats_password
+  type: password
+- name: postgres_password
+  type: password
+- name: default_ca
+  options:
+    common_name: ca
+    is_ca: true
+  type: certificate
+- name: mbus_bootstrap_ssl
+  options:
+    alternative_names:
+    - ((internal_ip))
+    - ((external_ip))
+    ca: default_ca
+    common_name: ((internal_ip))
+  type: certificate
+- name: director_ssl
+  options:
+    alternative_names:
+    - ((internal_ip))
+    - ((external_ip))
+    ca: default_ca
+    common_name: ((internal_ip))
+  type: certificate
+- name: jumpbox_ssh
+  type: ssh
