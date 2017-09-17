@@ -12,26 +12,16 @@ set -o pipefail # fail if any component of any pipe fails
 
 
 main() {
-  local director_address
-  director_address="https://192.168.50.6:25555"
-  director_username="admin"
-  director_password="$(bosh interpolate --path=/admin_password "$HOME/deployments/vbox/creds.yml")"
-  director_ca_cert="$(bosh interpolate --path=/director_ssl/ca "$HOME/deployments/vbox/creds.yml")"
-
-  cf_admin_password=$(bosh interpolate --path=/cf_admin_password "$HOME/workspace/cf-deployment/deployment-vars.yml")
-
-  bosh interpolate \
-    "$MANIFESTS/litehouse-template.yml" \
-    --vars-store "$MANIFESTS/litehouse-vars-store.yml" \
-    --var cf-api-url=https://api.bosh-lite.com \
-    --var cf-uaa-url=https://uaa.bosh-lite.com \
-    --var cf-admin-username=admin \
-    --var cf-admin-password="$cf_admin_password" \
-    --var bosh-url="$director_address" \
-    --var bosh-root-ca-cert="$director_ca_cert" \
-    --var bosh-basic-username="$director_username" \
-    --var bosh-basic-password="$director_password" \
-    | tee "$MANIFESTS/litehouse-bosh-lite-manifest.yml"
+    bosh interpolate \
+    ~/workspace/bosh-deployment/bosh.yml \
+    -o ~/workspace/bosh-deployment/bosh-lite.yml \
+    -o ~/workspace/bosh-deployment/jumpbox-user.yml \
+    -o ~/workspace/bosh-deployment/external-ip-not-recommended.yml \
+    -o ~/workspace/bosh-deployment/misc/bosh-dev.yml \
+    --vars-store ./creds.yml \
+    -v director_name="Bosh Lite Director" \
+    -v internal_ip=127.0.0.1 \
+    -v external_ip=104.199.81.49
 }
 
 main
