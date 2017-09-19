@@ -36,7 +36,7 @@ var _ = Describe("adapter commands", func() {
 				"instance_groups": [{
 					"name": "bosh-lite",
 					"vm_type": "medium",
-					"persisten_disk_type": "10GB",
+					"persistent_disk_type": "10GB",
 					"networks": [
 						"default"
 					],
@@ -80,7 +80,7 @@ var _ = Describe("adapter commands", func() {
 			}
 		})
 
-		XIt("contains no unused variables", func() {
+		It("contains no unused variables", func() {
 			Expect(generatedManifest.Variables).To(HaveLen(0))
 		})
 
