@@ -2,6 +2,42 @@
 
 
 [[projects]]
+  name = "github.com/bmatcuk/doublestar"
+  packages = ["."]
+  revision = "b3608229437ba4dc33dae64d56a79a2a73f1f6b2"
+  version = "v1.0.9"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/charlievieth/fs"
+  packages = ["."]
+  revision = "7dc373669fa10ddf827c37c595dee30a2f001be9"
+
+[[projects]]
+  name = "github.com/cloudfoundry/bosh-cli"
+  packages = ["director/template"]
+  revision = "98d425d7bc3623b46fa61fb6849444ee30fdd5db"
+  version = "v2.0.38"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/cloudfoundry/bosh-utils"
+  packages = ["errors","logger","system"]
+  revision = "a960ab178e64b43d19051be6fd2891ff695bb206"
+
+[[projects]]
+  name = "github.com/cloudfoundry/config-server"
+  packages = ["types"]
+  revision = "d29aa99b7c301778efea4714252b6ef549089d6b"
+  version = "v0.0.124"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/cppforlife/go-patch"
+  packages = ["patch"]
+  revision = "d9e51bef8eda190cdbac94dddd3c304080774726"
+
+[[projects]]
   name = "github.com/onsi/ginkgo"
   packages = [".","config","internal/codelocation","internal/containernode","internal/failer","internal/leafnodes","internal/remote","internal/spec","internal/spec_iterator","internal/specrunner","internal/suite","internal/testingtproxy","internal/writer","reporters","reporters/stenographer","reporters/stenographer/support/go-colorable","reporters/stenographer/support/go-isatty","types"]
   revision = "9eda700730cba42af70d53180f9dcce9266bc2bc"
@@ -18,6 +54,12 @@
   packages = ["bosh","serviceadapter"]
   revision = "83eb5c00e7195e469f13085469b6321d20bb1db8"
   version = "v0.17.0"
+
+[[projects]]
+  branch = "master"
+  name = "golang.org/x/crypto"
+  packages = ["curve25519","ed25519","ed25519/internal/edwards25519","ssh"]
+  revision = "7d9177d70076375b9a59c8fde23d52d9c4a7ecd5"
 
 [[projects]]
   branch = "master"
@@ -52,6 +94,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "9a3424aa4cb7f1551bc2899cc04b9767fb315eb3783e4eea964c92e7201f7672"
+  inputs-digest = "036ec6cbb4ee6ca4a022b6e75e2cc57963b74d4de8d06363bcd31d2d363ce692"
   solver-name = "gps-cdcl"
   solver-version = 1
