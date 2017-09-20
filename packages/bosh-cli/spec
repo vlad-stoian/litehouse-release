@@ -1,0 +1,7 @@
+---
+name: bosh-cli
+
+dependencies: []
+
+files:
+- bosh-cli/bosh-cli-2.0.31-linux-amd64

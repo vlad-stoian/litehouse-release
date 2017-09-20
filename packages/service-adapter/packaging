@@ -2,14 +2,18 @@
 set -e
 
 PACKAGE_NAME=github.com/vlad-stoian/litehouse
+PACKAGE_ASSETS=${PACKAGE_NAME}/assets
 PACKAGE_DIR=${BOSH_INSTALL_TARGET}/src/${PACKAGE_NAME}
+
+
+mkdir -p "${BOSH_INSTALL_TARGET}/assets"
+cp -a "$PACKAGE_ASSETS/" "$BOSH_INSTALL_TARGET/assets"
 
 mkdir -p "$(dirname "$PACKAGE_DIR")"
 
 cp -a "$PACKAGE_NAME/" "$PACKAGE_DIR"
 
-
-export GOROOT="$(readlink -nf /var/vcap/packages/go-1.9)"
+export GOROOT="$(readlink -nf /var/vcap/packages/go)"
 export GOPATH=$BOSH_INSTALL_TARGET:${PACKAGE_DIR}/vendor
 export PATH=$GOROOT/bin:$PATH
 

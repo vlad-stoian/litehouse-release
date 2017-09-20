@@ -2,7 +2,8 @@
 name: service-adapter
 
 dependencies:
-- go-1.9
+- go
+- bosh-cli
 
 files:
 - github.com/vlad-stoian/litehouse/**/*.go
