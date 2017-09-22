@@ -7,7 +7,7 @@ PACKAGE_DIR=${BOSH_INSTALL_TARGET}/src/${PACKAGE_NAME}
 
 
 mkdir -p "${BOSH_INSTALL_TARGET}/assets"
-cp -a "$PACKAGE_ASSETS/" "$BOSH_INSTALL_TARGET/assets"
+cp -a "$PACKAGE_ASSETS/" "$BOSH_INSTALL_TARGET"
 
 mkdir -p "$(dirname "$PACKAGE_DIR")"
 

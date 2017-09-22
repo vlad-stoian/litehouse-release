@@ -7,3 +7,4 @@ dependencies:
 
 files:
 - github.com/vlad-stoian/litehouse/**/*.go
+- github.com/vlad-stoian/litehouse/**/*.yml
