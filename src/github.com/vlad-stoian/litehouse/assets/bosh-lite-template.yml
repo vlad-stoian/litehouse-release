@@ -28,8 +28,8 @@ instance_groups:
   - default:
     - dns
     - gateway
-    name: default
-  - name: public
+    name: directors
+  - name: vip
     static_ips:
     - ((external_ip))
   persistent_disk_type: 100GB

@@ -26,36 +26,53 @@ func NewManifestGenerator(boshLiteTemplatePath, boshCLIPath string) ManifestGene
 }
 
 func (mg ManifestGenerator) GenerateManifest(
-	deployment serviceadapter.ServiceDeployment,
+	serviceDeployment serviceadapter.ServiceDeployment,
 	plan serviceadapter.Plan,
-	params serviceadapter.RequestParameters,
+	requestParameters serviceadapter.RequestParameters,
 	previousManifest *bosh.BoshManifest,
 	previousPlan *serviceadapter.Plan,
 ) (bosh.BoshManifest, error) {
 	if _, err := os.Stat(mg.boshLiteTemplatePath); os.IsNotExist(err) {
-		return bosh.BoshManifest{}, errors.WrapErrorf(err, "bosh lite template does not exist: %v", mg.boshLiteTemplatePath)
+		return bosh.BoshManifest{}, errors.WrapErrorf(err, "Bosh lite template does not exist: %v", mg.boshLiteTemplatePath)
 	}
 
 	if _, err := os.Stat(mg.boshCLIPath); os.IsNotExist(err) {
-		return bosh.BoshManifest{}, errors.WrapErrorf(err, "bosh cli does not exist: %v", mg.boshCLIPath)
+		return bosh.BoshManifest{}, errors.WrapErrorf(err, "Bosh cli does not exist: %v", mg.boshCLIPath)
 	}
 
-	arbitraryParams := params.ArbitraryParams()
-	externalIp, ok := arbitraryParams["ip"]
+	arbitraryParams := requestParameters.ArbitraryParams()
+	externalIpInterface, ok := arbitraryParams["ip"]
 	if !ok {
-		return bosh.BoshManifest{}, fmt.Errorf("ip key not found in request parameters: %v", arbitraryParams)
+		return bosh.BoshManifest{}, fmt.Errorf("IP key not found in request parameters: %v", arbitraryParams)
 	}
 
+	externalIp, ok := externalIpInterface.(string)
+	if !ok {
+		return bosh.BoshManifest{}, fmt.Errorf("IP key found but it is not of type string: %v", externalIpInterface)
+	}
+
+	boshLiteManifest, err := mg.interpolateManifest(externalIp)
+	if err != nil {
+		return bosh.BoshManifest{}, err
+	}
+
+	boshLiteManifest.Name = serviceDeployment.DeploymentName
+
+	return boshLiteManifest, nil
+}
+
+func (mg ManifestGenerator) interpolateManifest(externalIp string) (bosh.BoshManifest, error) {
 	var stdoutBuffer bytes.Buffer
 	var stderrBuffer bytes.Buffer
 
 	tempFile, err := ioutil.TempFile("", "example")
 	if err != nil {
-		return bosh.BoshManifest{}, errors.WrapErrorf(err, "error creating temp file")
+		return bosh.BoshManifest{}, errors.WrapErrorf(err, "Error creating temp file")
 	}
 	defer os.Remove(tempFile.Name())
 
-	cmd := exec.Command(mg.boshCLIPath,
+	cmd := exec.Command(
+		mg.boshCLIPath,
 		"interpolate",
 		mg.boshLiteTemplatePath,
 		fmt.Sprintf("--var=%s=%s", "director_name", "\"Bosh Lite Director\""),
@@ -64,12 +81,15 @@ func (mg ManifestGenerator) GenerateManifest(
 		fmt.Sprintf("--vars-store=%s", tempFile.Name()),
 	)
 
+	cmd.Env = os.Environ()
+	cmd.Env = append(cmd.Env, "HOME=/home/vcap") // bosh-cli will implode if this var is not set
+
 	cmd.Stdout = &stdoutBuffer
 	cmd.Stderr = &stderrBuffer
 
 	err = cmd.Run()
 	if err != nil {
-		return bosh.BoshManifest{}, errors.WrapErrorf(err, "error running bosh cli: %v", stderrBuffer.String())
+		return bosh.BoshManifest{}, errors.WrapErrorf(err, "Error running bosh cli, stderr: %v", stderrBuffer.String())
 	}
 
 	boshLiteManifestBytes := stdoutBuffer.Bytes()
@@ -78,7 +98,7 @@ func (mg ManifestGenerator) GenerateManifest(
 
 	err = yaml.Unmarshal(boshLiteManifestBytes, &boshLiteManifest)
 	if err != nil {
-		return bosh.BoshManifest{}, fmt.Errorf("error unmarshalling: %v", boshLiteManifestBytes)
+		return bosh.BoshManifest{}, errors.WrapErrorf(err, "Error unmarshalling: %v", boshLiteManifestBytes)
 	}
 
 	return boshLiteManifest, nil
