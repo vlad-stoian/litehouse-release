@@ -81,9 +81,6 @@ func (mg ManifestGenerator) interpolateManifest(externalIp string) (bosh.BoshMan
 		fmt.Sprintf("--vars-store=%s", tempFile.Name()),
 	)
 
-	cmd.Env = os.Environ()
-	cmd.Env = append(cmd.Env, "HOME=/home/vcap") // bosh-cli will implode if this var is not set
-
 	cmd.Stdout = &stdoutBuffer
 	cmd.Stderr = &stderrBuffer
 

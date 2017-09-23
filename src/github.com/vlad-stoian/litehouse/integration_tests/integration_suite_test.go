@@ -7,7 +7,6 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gexec"
 
-	"os"
 	"testing"
 )
 
@@ -26,10 +25,6 @@ var _ = AfterSuite(func() {
 
 func execBin(args ...string) *gexec.Session {
 	cmd := exec.Command(serviceAdapterBinPath, args...)
-
-	cmd.Env = append(os.Environ(),
-		"BOSH_CLI_PATH=/usr/local/bin/bosh",
-		"BOSH_LITE_TEMPLATE_PATH=/Users/pivotal/workspace/litehouse-release/src/github.com/vlad-stoian/litehouse/assets/bosh-lite-template.yml")
 
 	session, err := gexec.Start(cmd, GinkgoWriter, GinkgoWriter)
 	Expect(err).NotTo(HaveOccurred())

@@ -29,10 +29,10 @@ instance_groups:
     - dns
     - gateway
     name: directors
-  - name: vip
+  - name: public
     static_ips:
     - ((external_ip))
-  persistent_disk_type: 100GB
+  persistent_disk_type: 10GB
   properties:
     agent:
       mbus: nats://nats:((nats_password))@((internal_ip)):4222
@@ -133,30 +133,38 @@ instance_groups:
 name: bosh
 releases:
 - name: bosh
-  sha1: 07c07d8520b3508fbc25c4a747c9c038a4b8b672
-  url: https://s3.amazonaws.com/bosh-compiled-release-tarballs/bosh-262.2-ubuntu-trusty-3421.9-20170628-223206-395348439-20170628223211.tgz?versionId=LSWubg7BOnAZxXFDaCHEpIXWcxyqkb1o
-  version: "262.2"
+  sha1: 37630c636a030454d55703cfdd495d733525353f
+  url: https://s3.amazonaws.com/bosh-compiled-release-tarballs/bosh-263.2.0-ubuntu-trusty-3445.7-20170915-052445-759948783-20170915052451.tgz?versionId=3kjVQuRK7JyrnbKEbKhLRi7qyo0wBXZJ
+  version: 263.2.0
 - name: bosh-warden-cpi
-  sha1: 4bb373ba2331cc5b17fb6fb41921e308caab9222
-  url: https://s3.amazonaws.com/bosh-compiled-release-tarballs/bosh-warden-cpi-34-ubuntu-trusty-3421.9-20170621-054713-292897174-20170621054718.tgz?versionId=nPiYCAltzyFMN8eghQf6.YbkBYQBw9MR
-  version: "34"
+  sha1: d240afadc718c7f117c0880dbd3801c8e362c5df
+  url: https://s3.amazonaws.com/bosh-compiled-release-tarballs/bosh-warden-cpi-35-ubuntu-trusty-3445.7-20170901-172917-396543358-20170901172920.tgz?versionId=MhqRClutBJ38fmDuLUeTVg2EpI6YqRFZ
+  version: "35"
 - name: garden-linux
-  sha1: 80155df38a2adaeaa31a3b3bf92a78f77d0bba7e
-  url: https://s3.amazonaws.com/bosh-compiled-release-tarballs/garden-linux-0.342.0-ubuntu-trusty-3421.9-20170621-054813-977181521-20170621054819.tgz?versionId=7dtppaaQl0QT56J098jUL4cHCO.kUWfD
+  sha1: 979101c727008e2ea3f43856593c70af18e31b0b
+  url: https://s3.amazonaws.com/bosh-compiled-release-tarballs/garden-linux-0.342.0-ubuntu-trusty-3445.7-20170901-011312-774022578-20170901011318.tgz?versionId=s5IsHM0DFBW_.tZZkZdk8TLdzXVbBPHp
   version: 0.342.0
 - name: os-conf
-  sha1: 651f10a765a2900a7f69ea07705f3367bd8041eb
-  url: https://bosh.io/d/github.com/cloudfoundry/os-conf-release?v=11
-  version: 11
+  sha1: af5a2c9f228b9d7ec4bd051d71fef0e712fa1549
+  url: https://bosh.io/d/github.com/cloudfoundry/os-conf-release?v=12
+  version: 12
 stemcells:
 - alias: default
   os: ubuntu-trusty
-  version: "3421.3"
+  version: "3445.7"
 update:
   canaries: 0
   canary_watch_time: 30000-180000
   max_in_flight: 1
   update_watch_time: 30000-180000
+properties:
+  store_hack:
+    bosh_client: admin
+    bosh_client_secret: ((admin_password))
+    bosh_ca_cert: ((director_ssl.ca))
+    bosh_environment: https://((external_ip)):25555
+    bosh_gw_user: jumpbox
+    bosh_gw_private_key: ((jumpbox_ssh.private_key))
 variables:
 - name: admin_password
   type: password

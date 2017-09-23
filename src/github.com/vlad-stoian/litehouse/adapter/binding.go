@@ -8,10 +8,10 @@ import (
 type Binder struct{}
 
 func (b Binder) CreateBinding(
-	_ string,
+	bindingID string,
 	deploymentTopology bosh.BoshVMs,
 	manifest bosh.BoshManifest,
-	_ serviceadapter.RequestParameters,
+	requestParameters serviceadapter.RequestParameters,
 ) (serviceadapter.Binding, error) {
 
 	return serviceadapter.Binding{}, nil

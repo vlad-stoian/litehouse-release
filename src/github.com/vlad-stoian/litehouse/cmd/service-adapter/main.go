@@ -19,6 +19,9 @@ func getEnv(key, fallback string) string {
 func main() {
 	boshCLIPath := filepath.FromSlash(getEnv("BOSH_CLI_PATH", "/var/vcap/packages/bosh-cli/bin/bosh"))
 	boshLiteTemplatePath := filepath.FromSlash(getEnv("BOSH_LITE_TEMPLATE_PATH", "/var/vcap/packages/service-adapter/assets/bosh-lite-template.yml"))
+	homeDir := getEnv("HOME", "/home/vcap") // bosh-cli will implode if this var is not set
+
+	os.Setenv("HOME", homeDir)
 
 	manifestGenerator := adapter.NewManifestGenerator(
 		boshLiteTemplatePath,
