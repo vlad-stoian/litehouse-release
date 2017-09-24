@@ -18,7 +18,7 @@ var _ = Describe("adapter commands", func() {
 		var (
 			plan                   string
 			previousPlan           string
-			arbitraryParams        string
+			requestParameters      string
 			previousManifest       string
 			serviceDeployment      string
 			generatedManifest      *bosh.BoshManifest
@@ -51,7 +51,12 @@ var _ = Describe("adapter commands", func() {
 				}]
 			}`
 
-			arbitraryParams = "{ \"parameters\": { \"ip\": \"external-ip\" } }"
+			requestParameters = `{
+				"parameters": {
+					"ip": "request-parameters-external-ip"
+				}
+			}`
+
 			previousManifest = ""
 			previousPlan = "{}"
 
@@ -60,7 +65,7 @@ var _ = Describe("adapter commands", func() {
 		})
 
 		JustBeforeEach(func() {
-			session = execBin("generate-manifest", serviceDeployment, plan, arbitraryParams, previousManifest, previousPlan)
+			session = execBin("generate-manifest", serviceDeployment, plan, requestParameters, previousManifest, previousPlan)
 			generatedManifest = new(bosh.BoshManifest)
 			generatedManifestBytes = session.Out.Contents()
 			unmarshallErr = yaml.Unmarshal(generatedManifestBytes, generatedManifest)
@@ -93,7 +98,7 @@ var _ = Describe("adapter commands", func() {
 		})
 
 		It("has interpolated the external_ip correctly", func() {
-			Expect(generatedManifest.InstanceGroups[0].Networks[1].StaticIPs[0]).ToNot(Equal("((external_ip))"))
+			Expect(generatedManifest.InstanceGroups[0].Networks[1].StaticIPs[0]).To(Equal("request-parameters-external-ip"))
 		})
 
 		It("has all the varibles inside the store_hack", func() {
@@ -119,9 +124,37 @@ var _ = Describe("adapter commands", func() {
 			}
 
 		})
+
+		Context("when previousManifest is set", func() {
+			BeforeEach(func() {
+				previousManifest = `{
+					"instance_groups": [{
+						"name": "bosh-lite",
+						"vm_type": "medium",
+						"persistent_disk_type": "10GB",
+						"networks": [{
+							"name": "default"
+						}, {
+							"name": "public",
+							"static_ips": [
+								"previous-manifest-external-ip"
+							]
+						}],
+						"azs": [
+							"z1"
+						],
+						"instances": 1
+					}]
+				}`
+			})
+
+			It("uses the external ip from it rather than from the params", func() {
+				Expect(generatedManifest.InstanceGroups[0].Networks[1].StaticIPs[0]).To(Equal("previous-manifest-external-ip"))
+			})
+		})
 	})
 
-	FDescribe("create-binding", func() {
+	Describe("create-binding", func() {
 		var (
 			bindingID             string
 			deploymentTopology    string
@@ -150,7 +183,17 @@ var _ = Describe("adapter commands", func() {
 						"z1"
 					],
 					"instances": 1
-				}]
+				}],
+				"properties": {
+					"store_hack": {
+						"bosh_client": "bosh-client-value",
+						"bosh_client_secret": "bosh-client-secret-value",
+						"bosh_ca_cert": "bosh-ca-cert-value",
+						"bosh_environment": "bosh-environment-value",
+						"bosh_gw_user": "bosh-gw-user-value",
+						"bosh_gw_private_key": "bosh-gw-private-key-value",
+					}
+				}
 			}`
 
 			requestParameters = "{}"
@@ -173,5 +216,21 @@ var _ = Describe("adapter commands", func() {
 		It("produces valid binding", func() {
 			Expect(unmarshallErr).ToNot(HaveOccurred())
 		})
+
+		It("contains correct credentials", func() {
+			expectedProperties := []string{
+				"BOSH_CLIENT",
+				"BOSH_CLIENT_SECRET",
+				"BOSH_CA_CERT",
+				"BOSH_ENVIRONMENT",
+				"BOSH_GW_USER",
+				"BOSH_GW_PRIVATE_KEY",
+			}
+
+			for _, expectedProperty := range expectedProperties {
+				Expect(generatedBinding.Credentials).To(HaveKey(expectedProperty))
+			}
+		})
+
 	})
 })

@@ -32,7 +32,7 @@ instance_groups:
   - name: public
     static_ips:
     - ((external_ip))
-  persistent_disk_type: 10GB
+  persistent_disk_type: 100GB
   properties:
     agent:
       mbus: nats://nats:((nats_password))@((internal_ip)):4222
@@ -131,6 +131,14 @@ instance_groups:
   stemcell: default
   vm_type: default
 name: bosh
+properties:
+  store_hack:
+    bosh_ca_cert: ((director_ssl.ca))
+    bosh_client: admin
+    bosh_client_secret: ((admin_password))
+    bosh_environment: https://((external_ip)):25555
+    bosh_gw_private_key: ((jumpbox_ssh.private_key))
+    bosh_gw_user: jumpbox
 releases:
 - name: bosh
   sha1: 37630c636a030454d55703cfdd495d733525353f
@@ -157,14 +165,6 @@ update:
   canary_watch_time: 30000-180000
   max_in_flight: 1
   update_watch_time: 30000-180000
-properties:
-  store_hack:
-    bosh_client: admin
-    bosh_client_secret: ((admin_password))
-    bosh_ca_cert: ((director_ssl.ca))
-    bosh_environment: https://((external_ip)):25555
-    bosh_gw_user: jumpbox
-    bosh_gw_private_key: ((jumpbox_ssh.private_key))
 variables:
 - name: admin_password
   type: password

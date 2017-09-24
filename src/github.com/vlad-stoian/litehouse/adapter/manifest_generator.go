@@ -32,6 +32,7 @@ func (mg ManifestGenerator) GenerateManifest(
 	previousManifest *bosh.BoshManifest,
 	previousPlan *serviceadapter.Plan,
 ) (bosh.BoshManifest, error) {
+
 	if _, err := os.Stat(mg.boshLiteTemplatePath); os.IsNotExist(err) {
 		return bosh.BoshManifest{}, errors.WrapErrorf(err, "Bosh lite template does not exist: %v", mg.boshLiteTemplatePath)
 	}
@@ -40,18 +41,24 @@ func (mg ManifestGenerator) GenerateManifest(
 		return bosh.BoshManifest{}, errors.WrapErrorf(err, "Bosh cli does not exist: %v", mg.boshCLIPath)
 	}
 
-	arbitraryParams := requestParameters.ArbitraryParams()
-	externalIpInterface, ok := arbitraryParams["ip"]
-	if !ok {
-		return bosh.BoshManifest{}, fmt.Errorf("IP key not found in request parameters: %v", arbitraryParams)
+	var externalIP string
+
+	if previousManifest != nil {
+		externalIP = previousManifest.InstanceGroups[0].Networks[1].StaticIPs[0]
+	} else {
+		arbitraryParams := requestParameters.ArbitraryParams()
+		externalIPInterface, ok := arbitraryParams["ip"]
+		if !ok {
+			return bosh.BoshManifest{}, fmt.Errorf("IP key not found in request parameters: %v", arbitraryParams)
+		}
+
+		externalIP, ok = externalIPInterface.(string)
+		if !ok {
+			return bosh.BoshManifest{}, fmt.Errorf("IP key found but it is not of type string: %v", externalIPInterface)
+		}
 	}
 
-	externalIp, ok := externalIpInterface.(string)
-	if !ok {
-		return bosh.BoshManifest{}, fmt.Errorf("IP key found but it is not of type string: %v", externalIpInterface)
-	}
-
-	boshLiteManifest, err := mg.interpolateManifest(externalIp)
+	boshLiteManifest, err := mg.interpolateManifest(externalIP)
 	if err != nil {
 		return bosh.BoshManifest{}, err
 	}
@@ -61,7 +68,7 @@ func (mg ManifestGenerator) GenerateManifest(
 	return boshLiteManifest, nil
 }
 
-func (mg ManifestGenerator) interpolateManifest(externalIp string) (bosh.BoshManifest, error) {
+func (mg ManifestGenerator) interpolateManifest(externalIP string) (bosh.BoshManifest, error) {
 	var stdoutBuffer bytes.Buffer
 	var stderrBuffer bytes.Buffer
 
@@ -77,7 +84,7 @@ func (mg ManifestGenerator) interpolateManifest(externalIp string) (bosh.BoshMan
 		mg.boshLiteTemplatePath,
 		fmt.Sprintf("--var=%s=%s", "director_name", "\"Bosh Lite Director\""),
 		fmt.Sprintf("--var=%s=%s", "internal_ip", "127.0.0.1"),
-		fmt.Sprintf("--var=%s=%s", "external_ip", externalIp),
+		fmt.Sprintf("--var=%s=%s", "external_ip", externalIP),
 		fmt.Sprintf("--vars-store=%s", tempFile.Name()),
 	)
 
