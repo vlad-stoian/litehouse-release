@@ -1,0 +1,28 @@
+- type: remove
+  path: /instance_groups/name=bosh/jobs/name=disable_agent
+
+- type: remove
+  path: /instance_groups/name=bosh/networks/name=default/static_ips
+
+- type: replace
+  path: /instance_groups/name=bosh/networks/name=default/name
+  value: 'directors'
+
+- type: replace
+  path: /instance_groups/name=bosh/persistent_disk_type?
+  value: 100GB
+
+- type: replace
+  path: /properties?
+  value:
+    store_hack:
+      bosh_client: admin
+      bosh_client_secret: ((admin_password))
+      bosh_ca_cert: ((director_ssl.ca))
+      bosh_environment: https://((external_ip)):25555
+      bosh_gw_user: jumpbox
+      bosh_gw_private_key: ((jumpbox_ssh.private_key))
+
+
+
+

@@ -62,7 +62,7 @@ instance_groups:
             id: bosh
             service_name: bosh
             service_description: Creates a bosh lite just for you
-            bindable: false
+            bindable: true
             plan_updatable: false
             metadata: {}
             tags: []
@@ -90,7 +90,8 @@ instance_groups:
     stemcell: trusty
     networks:
     - name: default
-    azs: [z1]
+    azs:
+    - z1
 
   - name: register-broker
     lifecycle: errand
@@ -108,8 +109,10 @@ instance_groups:
             admin_password: ((cf-admin-password))
     vm_type: small
     stemcell: trusty
-    networks: [{name: default}]
-    azs: [z1]
+    networks:
+    - name: default
+    azs:
+    - z1
 
   - name: deregister-broker
     lifecycle: errand
@@ -126,8 +129,23 @@ instance_groups:
             admin_password: ((cf-admin-password))
     vm_type: small
     stemcell: trusty
-    networks: [{name: default}]
-    azs: [z1]
+    networks:
+    - name: default
+    azs:
+    - z1
+
+  - name: upgrade-all-service-instances
+    lifecycle: errand
+    instances: 1
+    jobs:
+    - name: upgrade-all-service-instances
+      release: on-demand-service-broker
+    vm_type: small
+    stemcell: trusty
+    networks:
+    - name: default
+    azs:
+    - z1
 
 update:
   canaries: 1

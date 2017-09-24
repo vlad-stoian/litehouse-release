@@ -10,19 +10,13 @@ set -o pipefail # fail if any component of any pipe fails
 
 : "${LITEHOUSE:="$WORKSPACE/litehouse-release"}"
 : "${MANIFESTS:="$LITEHOUSE/manifests"}"
+: "${BOSH_LITE_TEMPLATE_ASSET:="$LITEHOUSE/src/github.com/vlad-stoian/litehouse/assets/bosh-lite-template.yml"}"
 
 : "${BOSH_DEPLOYMENT:="$WORKSPACE/bosh-deployment"}"
 
+
+
 main() {
-    local director_name="${1:-}"
-    local external_ip="${2:-}"
-
-    if [[ -z "$director_name" || -z "$external_ip" ]]
-    then
-        echo "usage: $0 <director-name> <external-ip>"
-        exit 1
-    fi
-
     bosh interpolate \
     "$BOSH_DEPLOYMENT/bosh.yml" \
     -o "$BOSH_DEPLOYMENT/bosh-lite.yml" \
@@ -30,11 +24,7 @@ main() {
     -o "$BOSH_DEPLOYMENT/external-ip-not-recommended.yml" \
     -o "$BOSH_DEPLOYMENT/misc/bosh-dev.yml" \
     -o "$MANIFESTS/operations/remove-extra.yml" \
-    --vars-store "$MANIFESTS/$director_name-vars-store.yml" \
-    -v director_name="Bosh Lite Director - $director_name" \
-    -v internal_ip=127.0.0.1 \
-    -v external_ip="$external_ip" \
-    | tee "$MANIFESTS/$director_name-manifest.yml"
+    | tee "$BOSH_LITE_TEMPLATE_ASSET"
 }
 
-main "$@"
+main
